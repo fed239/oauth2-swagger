@@ -1,0 +1,129 @@
+swagger: '2.0'
+info:
+  title: Authentication API
+  description: |
+    Implementation of [OAuth 2.0](https://tools.ietf.org/html/rfc6749  "Docs") with Authorization Code Grant type
+  version: "1.0.0"
+schemes:
+  - https
+basePath: /oauth2
+produces:
+  - application/json
+paths:
+  /auth:
+    get:
+      summary: Authentication Endpoint
+      operationId: auth
+      parameters:
+        - name: response_type
+          in: query
+          required: true
+          type: string
+          enum:
+            - code
+        - name: client_id
+          in: query
+          required: true
+          type: string
+        - name: redirect_uri
+          in: query
+          required: true
+          type: string
+        - name: scope
+          in: query
+          type: string
+      produces:
+        - application/json
+      tags:
+        - oauth2
+      responses:
+        302:
+          description: Redirect to OAuth provider
+  /token:
+    post:
+      summary: Request Access Token
+      operationId: getToken
+      description: |
+        Partner makes a request to the token endpoint by adding the
+        following parameters describerd  below
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      parameters:
+        - name: grant_type
+          in: formData
+          description: Value MUST be set to "authorization_code" as per RFC
+          required: true
+          type: string
+          enum:
+            - authorization_code
+      tags:
+        - oauth2
+      responses:
+        200:
+          description: Authorisation token (Bearer)
+          schema:
+              $ref: '#/definitions/Token'
+          examples:
+            application/json: |-
+              {
+                 "access_token": "ACCESS_TOKEN",
+                 "token_type": "Bearer",
+                 "expires_in": 3600,
+               }
+        400: 
+          description: As per RFC authorisation server responds with 400 in case of error
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json: |-
+              {
+                "error":"invalid_request"
+              }
+    delete:
+      summary: Invalidate access token
+      operationId: deleteToken
+      tags:
+        - oauth2
+      responses:
+        200:
+          description: Empty body with 200 code
+        403:
+          description: Access Token already invalidated or not found
+        500:
+          description: Internal server error
+definitions:
+  Token:
+    type: object
+    properties:
+      access_token:
+        type: string
+        description: The access token value
+      token_type:
+        type: string
+        enum: 
+          - Bearer
+        description: Type of the token is set to "Bearer"
+      expires_in:
+        type: integer
+        format: int32
+        description: The lifetime in seconds of the access token
+  Error:
+    type: object
+    properties:
+      error:
+        type: string
+        enum:
+          - invalid_request
+          - invalid_client
+          - invalid_grant
+          - unauthorized_client
+          - unsupported_grant_type
+      error_description:
+        type: string
+        description: Human-readable text providing additional information
+      error_uri:
+        type: string
+        description: A URI identifying a human-readable web page with
+         information about the error
