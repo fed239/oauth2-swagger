@@ -32,6 +32,9 @@ paths:
         - name: scope
           in: query
           type: string
+        - name: state
+          in: query
+          type: string
       produces:
         - application/json
       tags:
@@ -45,7 +48,7 @@ paths:
       operationId: getToken
       description: |
         Partner makes a request to the token endpoint by adding the
-        following parameters describerd  below
+        following parameters described below
       consumes:
         - application/x-www-form-urlencoded
       produces:
@@ -58,6 +61,13 @@ paths:
           type: string
           enum:
             - authorization_code
+        - name: code
+          in: formData
+          description: |
+            The code received in the query string when redirected from authorization
+            page
+          required: true
+          type: string
       tags:
         - oauth2
       responses:
